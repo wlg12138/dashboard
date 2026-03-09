@@ -1,576 +1,560 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.4">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧采购管理平台</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0e1a;--card:#111827;--accent:#6366f1;--accent2:#06b6d4;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;--text:#e2e8f0;--muted:#64748b;--border:#1e293b;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;font-size:13px;}
+
+.header{background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:11px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #312e81;position:sticky;top:0;z-index:100;}
+.logo{font-size:16px;font-weight:700;background:linear-gradient(90deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-right{display:flex;align-items:center;gap:14px;}
+.time{font-size:12px;color:var(--muted);}
+.view-tabs{display:flex;background:#0f172a;border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;}
+.view-tab{padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:.2s;color:var(--muted);border:none;background:transparent;}
+.view-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+
+.main{padding:12px 18px;}
+.view{display:none;}.view.active{display:block;}
+.row{margin-bottom:12px;}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;transition:.2s;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(99,102,241,.2);border-color:var(--accent);}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px;}
+.kpi-value{font-size:21px;font-weight:700;color:#fff;margin-bottom:4px;}
+.kpi-sub{font-size:11px;}
+.up{color:var(--green);}.dn{color:var(--red);}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:660px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{cursor:pointer;color:var(--muted);font-size:18px;}
+.sub-table{width:100%;border-collapse:collapse;font-size:13px;}
+.sub-table th{background:#1e293b;padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;}
+.sub-table td{padding:9px 12px;border-bottom:1px solid var(--border);}
+
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;}
+.ctitle{font-size:12px;font-weight:700;margin-bottom:10px;color:#fff;display:flex;align-items:center;gap:6px;}
+.ctitle .bar{width:3px;height:13px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px;flex-shrink:0;}
+
+/* ROW2 layout */
+.mid-grid{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:12px;align-items:stretch;}
+
+/* LEFT column */
+.left-col{display:flex;flex-direction:column;gap:10px;}
+.mini-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;}
+
+/* donut center overlay */
+.donut-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.donut-center{position:absolute;text-align:center;pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%);}
+.dc-val{font-size:15px;font-weight:800;color:#fff;line-height:1.1;}
+.dc-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* coverage stats row */
+.cov-stats{display:flex;gap:0;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+.cov-stat{flex:1;text-align:center;}
+.cov-stat+.cov-stat{border-left:1px solid var(--border);}
+.cov-stat .sv{font-size:13px;font-weight:700;color:#fff;}
+.cov-stat .sl{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* RANK TABLE */
+.rank-table{width:100%;border-collapse:collapse;font-size:12px;}
+.rank-table th{padding:7px 8px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;}
+.rank-table td{padding:6px 8px;border-bottom:1px solid #0f172a;}
+.rank-badge{width:19px;height:19px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.r1{background:#f59e0b;color:#000;}.r2{background:#94a3b8;color:#000;}.r3{background:#b45309;color:#fff;}.rn{background:#1e293b;color:var(--muted);}
+
+/* FUNNEL */
+.funnel-wrap{display:flex;flex-direction:column;gap:2px;}
+.f-step{display:flex;flex-direction:column;align-items:center;width:100%;}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;margin-bottom:11px;border-bottom:1px solid var(--border);}
+.tab-btn{padding:7px 15px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent;border-bottom:2px solid transparent;transition:.2s;}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+
+.list-table{width:100%;border-collapse:collapse;font-size:12px;}
+.list-table th{padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;background:#0f172a;font-size:11px;}
+.list-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}
+.b-red{background:rgba(239,68,68,.15);color:#ef4444;}
+.b-yellow{background:rgba(245,158,11,.15);color:#f59e0b;}
+.b-green{background:rgba(16,185,129,.15);color:#10b981;}
+.b-blue{background:rgba(99,102,241,.15);color:#6366f1;}
+.btn-link{color:var(--accent2);font-size:11px;cursor:pointer;text-decoration:underline;background:none;border:none;}
+
+/* EXEC */
+.exec-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;}
+.exec-mid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:stretch;}
+.trend-toggle{display:flex;gap:4px;margin-bottom:9px;}
+.tt-btn{padding:3px 9px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);}
+.tt-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.filter-select{background:#0f172a;border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:12px;cursor:pointer;}
+.cost-legend-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.cost-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+</style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="zh-CN"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1">&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1">&lt;title&gt;智慧采购管理平台&lt;/title&gt;</p>
-<p class="p1">&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"&gt;&lt;/script&gt;</p>
-<p class="p1">&lt;style&gt;</p>
-<p class="p1">*{margin:0;padding:0;box-sizing:border-box;}</p>
-<p class="p1">:root{--bg:#0a0e1a;--card:#111827;--accent:#6366f1;--accent2:#06b6d4;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;--text:#e2e8f0;--muted:#64748b;--border:#1e293b;}</p>
-<p class="p1">body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;font-size:13px;}</p>
-<p class="p2"><br></p>
-<p class="p1">.header{background:linear-gradient(135deg,#0f172a,#1e1b4b);padding:11px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #312e81;position:sticky;top:0;z-index:100;}</p>
-<p class="p1">.logo{font-size:16px;font-weight:700;background:linear-gradient(90deg,#6366f1,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}</p>
-<p class="p1">.header-right{display:flex;align-items:center;gap:14px;}</p>
-<p class="p1">.time{font-size:12px;color:var(--muted);}</p>
-<p class="p1">.view-tabs{display:flex;background:#0f172a;border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;}</p>
-<p class="p1">.view-tab{padding:6px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;transition:.2s;color:var(--muted);border:none;background:transparent;}</p>
-<p class="p1">.view-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}</p>
-<p class="p2"><br></p>
-<p class="p1">.main{padding:12px 18px;}</p>
-<p class="p1">.view{display:none;}.view.active{display:block;}</p>
-<p class="p1">.row{margin-bottom:12px;}</p>
-<p class="p2"><br></p>
-<p class="p1">.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;}</p>
-<p class="p1">.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;cursor:pointer;transition:.2s;position:relative;overflow:hidden;}</p>
-<p class="p1">.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}</p>
-<p class="p1">.kpi-card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(99,102,241,.2);border-color:var(--accent);}</p>
-<p class="p1">.kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px;}</p>
-<p class="p1">.kpi-value{font-size:21px;font-weight:700;color:#fff;margin-bottom:4px;}</p>
-<p class="p1">.kpi-sub{font-size:11px;}</p>
-<p class="p1">.up{color:var(--green);}.dn{color:var(--red);}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;}</p>
-<p class="p1">.modal-overlay.show{display:flex;}</p>
-<p class="p1">.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:660px;max-height:80vh;overflow-y:auto;}</p>
-<p class="p1">.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;color:#fff;display:flex;justify-content:space-between;align-items:center;}</p>
-<p class="p1">.modal-close{cursor:pointer;color:var(--muted);font-size:18px;}</p>
-<p class="p1">.sub-table{width:100%;border-collapse:collapse;font-size:13px;}</p>
-<p class="p1">.sub-table th{background:#1e293b;padding:9px 12px;text-align:left;color:var(--muted);font-weight:600;}</p>
-<p class="p1">.sub-table td{padding:9px 12px;border-bottom:1px solid var(--border);}</p>
-<p class="p2"><br></p>
-<p class="p1">.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;}</p>
-<p class="p1">.ctitle{font-size:12px;font-weight:700;margin-bottom:10px;color:#fff;display:flex;align-items:center;gap:6px;}</p>
-<p class="p1">.ctitle .bar{width:3px;height:13px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:2px;flex-shrink:0;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* ROW2 layout */</p>
-<p class="p1">.mid-grid{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:12px;align-items:stretch;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* LEFT column */</p>
-<p class="p1">.left-col{display:flex;flex-direction:column;gap:10px;}</p>
-<p class="p1">.mini-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}</p>
-<p class="p1">.mini-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;flex-direction:column;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* donut center overlay */</p>
-<p class="p1">.donut-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}</p>
-<p class="p1">.donut-center{position:absolute;text-align:center;pointer-events:none;left:50%;top:50%;transform:translate(-50%,-50%);}</p>
-<p class="p1">.dc-val{font-size:15px;font-weight:800;color:#fff;line-height:1.1;}</p>
-<p class="p1">.dc-sub{font-size:9px;color:var(--muted);margin-top:2px;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* coverage stats row */</p>
-<p class="p1">.cov-stats{display:flex;gap:0;margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}</p>
-<p class="p1">.cov-stat{flex:1;text-align:center;}</p>
-<p class="p1">.cov-stat+.cov-stat{border-left:1px solid var(--border);}</p>
-<p class="p1">.cov-stat .sv{font-size:13px;font-weight:700;color:#fff;}</p>
-<p class="p1">.cov-stat .sl{font-size:10px;color:var(--muted);margin-top:2px;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* RANK TABLE */</p>
-<p class="p1">.rank-table{width:100%;border-collapse:collapse;font-size:12px;}</p>
-<p class="p1">.rank-table th{padding:7px 8px;text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;}</p>
-<p class="p1">.rank-table td{padding:6px 8px;border-bottom:1px solid #0f172a;}</p>
-<p class="p1">.rank-badge{width:19px;height:19px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}</p>
-<p class="p1">.r1{background:#f59e0b;color:#000;}.r2{background:#94a3b8;color:#000;}.r3{background:#b45309;color:#fff;}.rn{background:#1e293b;color:var(--muted);}</p>
-<p class="p2"><br></p>
-<p class="p1">/* FUNNEL */</p>
-<p class="p1">.funnel-wrap{display:flex;flex-direction:column;gap:2px;}</p>
-<p class="p1">.f-step{display:flex;flex-direction:column;align-items:center;width:100%;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* TABS */</p>
-<p class="p1">.tab-bar{display:flex;gap:0;margin-bottom:11px;border-bottom:1px solid var(--border);}</p>
-<p class="p1">.tab-btn{padding:7px 15px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent;border-bottom:2px solid transparent;transition:.2s;}</p>
-<p class="p1">.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}</p>
-<p class="p1">.tab-pane{display:none;}.tab-pane.active{display:block;}</p>
-<p class="p2"><br></p>
-<p class="p1">.list-table{width:100%;border-collapse:collapse;font-size:12px;}</p>
-<p class="p1">.list-table th{padding:8px 10px;text-align:left;color:var(--muted);font-weight:600;background:#0f172a;font-size:11px;}</p>
-<p class="p1">.list-table td{padding:8px 10px;border-bottom:1px solid var(--border);}</p>
-<p class="p1">.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}</p>
-<p class="p1">.b-red{background:rgba(239,68,68,.15);color:#ef4444;}</p>
-<p class="p1">.b-yellow{background:rgba(245,158,11,.15);color:#f59e0b;}</p>
-<p class="p1">.b-green{background:rgba(16,185,129,.15);color:#10b981;}</p>
-<p class="p1">.b-blue{background:rgba(99,102,241,.15);color:#6366f1;}</p>
-<p class="p1">.btn-link{color:var(--accent2);font-size:11px;cursor:pointer;text-decoration:underline;background:none;border:none;}</p>
-<p class="p2"><br></p>
-<p class="p1">/* EXEC */</p>
-<p class="p1">.exec-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;}</p>
-<p class="p1">.exec-mid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:stretch;}</p>
-<p class="p1">.trend-toggle{display:flex;gap:4px;margin-bottom:9px;}</p>
-<p class="p1">.tt-btn{padding:3px 9px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);}</p>
-<p class="p1">.tt-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}</p>
-<p class="p1">.filter-select{background:#0f172a;border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:7px;font-size:12px;cursor:pointer;}</p>
-<p class="p1">.cost-legend-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;}</p>
-<p class="p1">.cost-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}</p>
-<p class="p1">&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="logo"&gt;⬡ 智慧采购管理平台&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="header-right"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="time" id="clock"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="view-tabs"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="view-tab active" onclick="switchView('admin',this)"&gt;管理决策层&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="view-tab" onclick="switchView('exec',this)"&gt;项目执行层&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="modal-overlay" id="modal" onclick="closeModal(event)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="modal"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="modal-title"&gt;&lt;span id="modal-title"&gt;&lt;/span&gt;&lt;span class="modal-close" onclick="document.getElementById('modal').classList.remove('show')"&gt;✕&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="modal-body"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="main"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;!-- ===== ADMIN ===== --&gt;</p>
-<p class="p1">&lt;div class="view active" id="view-admin"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- ROW1 KPI --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="kpi-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="kpi-card" onclick="openModal('contract')"&gt;&lt;div class="kpi-label"&gt;年度合同签约总额&lt;/div&gt;&lt;div class="kpi-value"&gt;¥42.8亿&lt;/div&gt;&lt;div class="kpi-sub up"&gt;▲ 同比增长 18.6%&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="kpi-card" onclick="openModal('profit')"&gt;&lt;div class="kpi-label"&gt;利润总额&lt;/div&gt;&lt;div class="kpi-value"&gt;¥6.34亿&lt;/div&gt;&lt;div class="kpi-sub up"&gt;▲ 同比增长 12.3%&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="kpi-card" onclick="openModal('cashback')"&gt;&lt;div class="kpi-label"&gt;资金回笼率&lt;/div&gt;&lt;div class="kpi-value"&gt;87.2%&lt;/div&gt;&lt;div class="kpi-sub up"&gt;▲ 较上月 +2.1%&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="kpi-card" onclick="openModal('receivable')"&gt;&lt;div class="kpi-label"&gt;待收款金额&lt;/div&gt;&lt;div class="kpi-value"&gt;¥5.47亿&lt;/div&gt;&lt;div class="kpi-sub dn"&gt;▼ 较上月 +0.8亿&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="kpi-card" onclick="openModal('budget')"&gt;&lt;div class="kpi-label"&gt;预算执行率&lt;/div&gt;&lt;div class="kpi-value"&gt;76.4%&lt;/div&gt;&lt;div class="kpi-sub" style="color:var(--muted)"&gt;¥32.7亿 / ¥42.8亿&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- ROW2 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="mid-grid"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;!-- LEFT --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="left-col"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="mini-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;!-- 集采覆盖率 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="mini-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;集采覆盖率&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="display:flex;justify-content:center;align-items:center;flex:1;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="donut-wrap" style="width:110px;height:110px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;canvas id="coverageChart" width="110" height="110"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="donut-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div class="dc-val"&gt;73.8%&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                  </span>&lt;div class="dc-sub"&gt;覆盖率&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="cov-stats"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="cov-stat"&gt;&lt;div class="sv" style="color:var(--accent2);"&gt;¥42.8亿&lt;/div&gt;&lt;div class="sl"&gt;采购总金额&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="cov-stat"&gt;&lt;div class="sv" style="color:var(--accent);"&gt;¥31.6亿&lt;/div&gt;&lt;div class="sl"&gt;框架协议覆盖&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;!-- 履约评级 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="mini-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;履约评级&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="display:flex;justify-content:center;align-items:center;flex:1;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="donut-wrap" style="width:110px;height:110px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>&lt;canvas id="ratingDonutChart" width="110" height="110"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 客户库 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="chart-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="ctitle" style="margin-bottom:8px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;span class="bar"&gt;&lt;/span&gt;客户库分析</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="display:flex;gap:10px;margin-left:6px;align-items:center;flex-wrap:nowrap;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style="font-size:11px;color:var(--muted);"&gt;总数 &lt;strong style="font-size:16px;font-weight:800;color:var(--accent);"&gt;386&lt;/strong&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style="font-size:11px;color:var(--muted);"&gt;战略 &lt;strong style="font-size:13px;color:#10b981;"&gt;24&lt;/strong&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style="font-size:11px;color:var(--muted);"&gt;重点 &lt;strong style="font-size:13px;color:#f59e0b;"&gt;118&lt;/strong&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;span style="font-size:11px;color:var(--muted);"&gt;普通 &lt;strong style="font-size:13px;color:var(--muted);"&gt;244&lt;/strong&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style="position:relative;height:130px;"&gt;&lt;canvas id="clientChart"&gt;&lt;/canvas&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;!-- CENTER TOP10 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="chart-card" style="display:flex;flex-direction:column;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;核心供应商排名 TOP10&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="rank-table"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;thead&gt;&lt;tr&gt;&lt;th&gt;排名&lt;/th&gt;&lt;th&gt;供应商名称&lt;/th&gt;&lt;th&gt;合同数&lt;/th&gt;&lt;th&gt;采购总金额&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tbody id="supplierRank"&gt;&lt;/tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;!-- RIGHT --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;flex-direction:column;gap:10px;"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 四大业态 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="chart-card" style="flex:1;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;四大业态采购资金分布&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div style="display:flex;align-items:center;gap:12px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- donut --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div style="position:relative;flex-shrink:0;width:130px;height:130px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;canvas id="bizChart" width="130" height="130"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;!-- legend single column, no wrap --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div id="bizLegend" style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;!-- 漏斗 --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="chart-card" style="flex:1;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;项目立项与转化漏斗&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="funnel-wrap" id="funnelWrap"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- ROW3 lists --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="chart-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-bar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="tab-btn active" onclick="switchTab('admin','risk',this)"&gt;⚠️ 风险预警监控&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="tab-btn" onclick="switchTab('admin','profrank',this)"&gt;📈 利润排行&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="tab-btn" onclick="switchTab('admin','complaint',this)"&gt;📋 供应商投诉列表&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-pane active" id="admin-risk"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="list-table"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;序号&lt;/th&gt;&lt;th&gt;供应商名称&lt;/th&gt;&lt;th&gt;风险类型&lt;/th&gt;&lt;th&gt;日期&lt;/th&gt;&lt;th&gt;等级&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;恒达建材有限公司&lt;/td&gt;&lt;td&gt;合同到期未续签&lt;/td&gt;&lt;td&gt;2025-06-08&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-red"&gt;高风险&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;绿洲物业服务&lt;/td&gt;&lt;td&gt;履约评分下降&lt;/td&gt;&lt;td&gt;2025-06-07&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;中风险&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;天逸餐饮集团&lt;/td&gt;&lt;td&gt;资质证书临期&lt;/td&gt;&lt;td&gt;2025-06-06&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;中风险&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;华宇通用物资&lt;/td&gt;&lt;td&gt;付款逾期&lt;/td&gt;&lt;td&gt;2025-06-05&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-red"&gt;高风险&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;博远工程建设&lt;/td&gt;&lt;td&gt;质量问题记录&lt;/td&gt;&lt;td&gt;2025-06-03&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-green"&gt;低风险&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tbody&gt;&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-pane" id="admin-profrank"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="list-table"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;序号&lt;/th&gt;&lt;th&gt;项目名称&lt;/th&gt;&lt;th&gt;合同额&lt;/th&gt;&lt;th&gt;利润额&lt;/th&gt;&lt;th&gt;利润率&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;龙华物业综合服务项目&lt;/td&gt;&lt;td&gt;¥1.28亿&lt;/td&gt;&lt;td&gt;¥2,176万&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-green"&gt;17.0%&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;南山区工程建设EPC总包&lt;/td&gt;&lt;td&gt;¥2.16亿&lt;/td&gt;&lt;td&gt;¥3,456万&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-green"&gt;16.0%&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;福田通用物资年度框架&lt;/td&gt;&lt;td&gt;¥0.86亿&lt;/td&gt;&lt;td&gt;¥1,204万&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-blue"&gt;14.0%&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;宝安餐饮服务采购项目&lt;/td&gt;&lt;td&gt;¥0.54亿&lt;/td&gt;&lt;td&gt;¥648万&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-blue"&gt;12.0%&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;5&lt;/td&gt;&lt;td&gt;罗湖智慧物业改造项目&lt;/td&gt;&lt;td&gt;¥1.02亿&lt;/td&gt;&lt;td&gt;¥918万&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;9.0%&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tbody&gt;&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-pane" id="admin-complaint"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="list-table"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;序号&lt;/th&gt;&lt;th&gt;投诉标题&lt;/th&gt;&lt;th&gt;项目名称&lt;/th&gt;&lt;th&gt;标段（包）名称&lt;/th&gt;&lt;th&gt;质疑信息&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;关于评分标准不透明投诉&lt;/td&gt;&lt;td&gt;南山工程建设EPC&lt;/td&gt;&lt;td&gt;A标段&lt;/td&gt;&lt;td&gt;评分细则未公示&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;资格审查结果异议&lt;/td&gt;&lt;td&gt;福田通用物资采购&lt;/td&gt;&lt;td&gt;第2包&lt;/td&gt;&lt;td&gt;资质认定存疑&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;中标价格合理性质疑&lt;/td&gt;&lt;td&gt;龙华物业综合服务&lt;/td&gt;&lt;td&gt;B标段&lt;/td&gt;&lt;td&gt;报价低于成本价&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看详情&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tbody&gt;&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;!-- ===== EXEC ===== --&gt;</p>
-<p class="p1">&lt;div class="view" id="view-exec"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="chart-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--border);"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style="font-size:12px;color:var(--muted);white-space:nowrap;"&gt;项目筛选：&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;select class="filter-select" onchange="updateExecProject(this.value)" style="min-width:200px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;option value="all"&gt;全部项目&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;option value="p1"&gt;龙华物业综合服务项目&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;option value="p2"&gt;南山工程建设EPC总包&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;option value="p3"&gt;福田通用物资年度框架&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;option value="p4"&gt;宝安餐饮服务采购项目&lt;/option&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/select&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span style="font-size:12px;color:var(--muted);margin-left:auto;"&gt;数据更新：2025-06-09 09:30&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="exec-kpi-row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="kpi-card" style="cursor:default;"&gt;&lt;div class="kpi-label"&gt;本月收入&lt;/div&gt;&lt;div class="kpi-value" id="exec-income"&gt;¥3,240万&lt;/div&gt;&lt;div class="kpi-sub up"&gt;▲ 同比 +14.2%&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="kpi-card" style="cursor:default;"&gt;&lt;div class="kpi-label"&gt;本月支出&lt;/div&gt;&lt;div class="kpi-value" id="exec-expense"&gt;¥2,186万&lt;/div&gt;&lt;div class="kpi-sub dn"&gt;▲ 同比 +8.7%&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="kpi-card" style="cursor:default;"&gt;&lt;div class="kpi-label"&gt;异常订单数量&lt;/div&gt;&lt;div class="kpi-value" style="color:#ef4444;"&gt;23&lt;/div&gt;&lt;div class="kpi-sub dn"&gt;较上月 +5单&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="kpi-card" style="cursor:default;"&gt;&lt;div class="kpi-label"&gt;临期合同数量&lt;/div&gt;&lt;div class="kpi-value" style="color:#f59e0b;"&gt;8&lt;/div&gt;&lt;div class="kpi-sub" style="color:var(--muted);"&gt;30天内到期&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="kpi-card" style="cursor:default;"&gt;&lt;div class="kpi-label"&gt;竞价活跃度&lt;/div&gt;&lt;div class="kpi-value" style="color:#8b5cf6;"&gt;47家&lt;/div&gt;&lt;div class="kpi-sub" style="color:var(--muted);"&gt;参与竞价厂商&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="exec-mid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="chart-card" style="display:flex;flex-direction:column;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;项目物料入库与验收&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="trend-toggle"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="tt-btn active" onclick="switchTrend('day',this)"&gt;日度&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="tt-btn" onclick="switchTrend('month',this)"&gt;月度&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button class="tt-btn" onclick="switchTrend('quarter',this)"&gt;季度&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style="flex:1;position:relative;min-height:220px;"&gt;&lt;canvas id="inventoryChart" style="position:absolute;inset:0;width:100%!important;height:100%!important;"&gt;&lt;/canvas&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="chart-card" style="display:flex;flex-direction:column;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;项目成本结构&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style="flex:1;display:flex;align-items:center;justify-content:center;gap:20px;padding:4px 0;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="donut-wrap" style="width:150px;height:150px;flex-shrink:0;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;canvas id="costChart" width="150" height="150"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="donut-center"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="dc-val" style="font-size:13px;"&gt;¥2,186万&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;div class="dc-sub"&gt;总成本&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="cost-legend-item"&gt;&lt;div class="cost-dot" style="background:#6366f1;"&gt;&lt;/div&gt;&lt;div&gt;&lt;div style="font-size:11px;color:var(--muted);"&gt;人工成本&lt;/div&gt;&lt;div style="font-size:13px;font-weight:700;color:#6366f1;"&gt;¥983万 &lt;span style="font-size:11px;color:var(--muted);font-weight:400;"&gt;45%&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="cost-legend-item"&gt;&lt;div class="cost-dot" style="background:#06b6d4;"&gt;&lt;/div&gt;&lt;div&gt;&lt;div style="font-size:11px;color:var(--muted);"&gt;物料成本&lt;/div&gt;&lt;div style="font-size:13px;font-weight:700;color:#06b6d4;"&gt;¥831万 &lt;span style="font-size:11px;color:var(--muted);font-weight:400;"&gt;38%&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="cost-legend-item" style="margin-bottom:0;"&gt;&lt;div class="cost-dot" style="background:#f59e0b;"&gt;&lt;/div&gt;&lt;div&gt;&lt;div style="font-size:11px;color:var(--muted);"&gt;管理成本&lt;/div&gt;&lt;div style="font-size:13px;font-weight:700;color:#f59e0b;"&gt;¥372万 &lt;span style="font-size:11px;color:var(--muted);font-weight:400;"&gt;17%&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="chart-card" style="display:flex;flex-direction:column;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="ctitle"&gt;&lt;span class="bar"&gt;&lt;/span&gt;供应商排名 TOP5（合同金额）&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style="flex:1;position:relative;min-height:220px;"&gt;&lt;canvas id="supplierExecChart" style="position:absolute;inset:0;width:100%!important;height:100%!important;"&gt;&lt;/canvas&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="chart-card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-bar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="tab-btn active" onclick="switchTab('exec','abnormal',this)"&gt;⚠️ 异常处理列表&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="tab-btn" onclick="switchTab('exec','dispute',this)"&gt;📋 供应商质疑列表&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-pane active" id="exec-abnormal"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="list-table"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;需求&lt;/th&gt;&lt;th&gt;物料名称&lt;/th&gt;&lt;th&gt;供应商&lt;/th&gt;&lt;th&gt;数量&lt;/th&gt;&lt;th&gt;异常原因&lt;/th&gt;&lt;th&gt;异常类型&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;紧急补货&lt;/td&gt;&lt;td&gt;304不锈钢管件&lt;/td&gt;&lt;td&gt;华宇通用物资&lt;/td&gt;&lt;td&gt;500件&lt;/td&gt;&lt;td&gt;规格不符&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;质量异常&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;处理&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;正常采购&lt;/td&gt;&lt;td&gt;建筑防水涂料&lt;/td&gt;&lt;td&gt;恒达建材&lt;/td&gt;&lt;td&gt;200桶&lt;/td&gt;&lt;td&gt;交期延误7天&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-red"&gt;交期异常&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;处理&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;替代采购&lt;/td&gt;&lt;td&gt;LED路灯灯具&lt;/td&gt;&lt;td&gt;明达照明&lt;/td&gt;&lt;td&gt;80套&lt;/td&gt;&lt;td&gt;型号停产&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-blue"&gt;型号变更&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;处理&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;正常采购&lt;/td&gt;&lt;td&gt;餐厅厨具套装&lt;/td&gt;&lt;td&gt;天逸餐饮&lt;/td&gt;&lt;td&gt;15套&lt;/td&gt;&lt;td&gt;数量短缺&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;数量异常&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;处理&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tbody&gt;&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="tab-pane" id="exec-dispute"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table class="list-table"&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;质疑标题&lt;/th&gt;&lt;th&gt;标段（包）名称&lt;/th&gt;&lt;th&gt;项目名称&lt;/th&gt;&lt;th&gt;提出单位&lt;/th&gt;&lt;th&gt;提出时间&lt;/th&gt;&lt;th&gt;受理状态&lt;/th&gt;&lt;th&gt;操作&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;评分结果异议&lt;/td&gt;&lt;td&gt;A标段&lt;/td&gt;&lt;td&gt;龙华物业综合服务&lt;/td&gt;&lt;td&gt;绿洲物业服务&lt;/td&gt;&lt;td&gt;2025-06-08&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-yellow"&gt;审核中&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;资质审查质疑&lt;/td&gt;&lt;td&gt;第2包&lt;/td&gt;&lt;td&gt;福田通用物资&lt;/td&gt;&lt;td&gt;华宇通用物资&lt;/td&gt;&lt;td&gt;2025-06-06&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-green"&gt;已受理&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tr&gt;&lt;td&gt;技术参数设置疑义&lt;/td&gt;&lt;td&gt;C标段&lt;/td&gt;&lt;td&gt;南山工程EPC&lt;/td&gt;&lt;td&gt;博远工程建设&lt;/td&gt;&lt;td&gt;2025-06-04&lt;/td&gt;&lt;td&gt;&lt;span class="badge b-red"&gt;已驳回&lt;/span&gt;&lt;/td&gt;&lt;td&gt;&lt;button class="btn-link"&gt;查看&lt;/button&gt;&lt;/td&gt;&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/tbody&gt;&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1">Chart.defaults.color='#64748b';</p>
-<p class="p1">Chart.defaults.borderColor='#1e293b';</p>
-<p class="p2"><br></p>
-<p class="p1">setInterval(()=&gt;document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false}),1000);</p>
-<p class="p1">document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false});</p>
-<p class="p2"><br></p>
-<p class="p1">function switchView(v,btn){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.view').forEach(el=&gt;el.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.view-tab').forEach(el=&gt;el.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('view-'+v).classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btn.classList.add('active');</p>
-<p class="p1">}</p>
-<p class="p1">function switchTab(view,name,btn){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const card=btn.closest('.chart-card');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>card.querySelectorAll('.tab-btn').forEach(b=&gt;b.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>card.querySelectorAll('.tab-pane').forEach(p=&gt;p.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btn.classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById(view+'-'+name).classList.add('active');</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">// MODAL</p>
-<p class="p1">const modalData={</p>
-<p class="p1"><span class="Apple-converted-space">  </span>contract:{title:'年度合同签约总额 · 子公司明细',cols:['子公司名称','签约金额','同比增速'],rows:[['华南物业集团','¥12.4亿','▲21.3%'],['深圳工程建设','¥10.8亿','▲15.6%'],['东莞通用采购','¥8.2亿','▲18.9%'],['广州餐饮管理','¥6.5亿','▲9.2%'],['佛山综合服务','¥4.9亿','▲22.1%']]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>profit:{title:'利润总额 · 子公司明细',cols:['子公司名称','利润额','占比'],rows:[['华南物业集团','¥1.92亿','30.3%'],['深圳工程建设','¥1.76亿','27.8%'],['东莞通用采购','¥1.24亿','19.6%'],['广州餐饮管理','¥0.86亿','13.6%'],['佛山综合服务','¥0.56亿','8.7%']]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cashback:{title:'资金回笼率 · 子公司明细',cols:['子公司名称','回笼率','评级'],rows:[['华南物业集团','92.4%','优秀'],['深圳工程建设','88.6%','良好'],['东莞通用采购','85.2%','良好'],['广州餐饮管理','82.0%','合格'],['佛山综合服务','87.8%','良好']]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>receivable:{title:'待收款金额 · 子公司明细',cols:['子公司名称','待收款额','账龄'],rows:[['华南物业集团','¥1.24亿','逾期60天'],['深圳工程建设','¥1.56亿','逾期30天'],['东莞通用采购','¥0.98亿','正常'],['广州餐饮管理','¥0.86亿','逾期15天'],['佛山综合服务','¥0.83亿','正常']]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>budget:{title:'预算执行率 · 子公司明细',cols:['子公司名称','实际执行','总预算','执行率'],rows:[['华南物业集团','¥9.8亿','¥12.4亿','79.0%'],['深圳工程建设','¥8.4亿','¥10.8亿','77.8%'],['东莞通用采购','¥6.2亿','¥8.2亿','75.6%'],['广州餐饮管理','¥4.8亿','¥6.5亿','73.8%'],['佛山综合服务','¥3.5亿','¥4.9亿','71.4%']]},</p>
-<p class="p1">};</p>
-<p class="p1">function openModal(key){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const d=modalData[key];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('modal-title').textContent=d.title;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>let h='&lt;table class="sub-table"&gt;&lt;thead&gt;&lt;tr&gt;'+d.cols.map(c=&gt;`&lt;th&gt;${c}&lt;/th&gt;`).join('')+'&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>d.rows.forEach(r=&gt;{h+='&lt;tr&gt;'+r.map(c=&gt;`&lt;td&gt;${c}&lt;/td&gt;`).join('')+'&lt;/tr&gt;';});</p>
-<p class="p1"><span class="Apple-converted-space">  </span>h+='&lt;/tbody&gt;&lt;/table&gt;';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('modal-body').innerHTML=h;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('modal').classList.add('show');</p>
-<p class="p1">}</p>
-<p class="p1">function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').classList.remove('show');}</p>
-<p class="p2"><br></p>
-<p class="p1">// 集采覆盖率</p>
-<p class="p1">new Chart(document.getElementById('coverageChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'doughnut',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{labels:['框架协议覆盖 ¥31.6亿','未覆盖 ¥11.2亿'],datasets:[{data:[73.8,26.2],backgroundColor:['#6366f1','#1e293b'],borderWidth:0,hoverOffset:4}]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;c.label+' ('+c.raw+'%)'}}}}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// 履约评级 — labels drawn on arcs</p>
-<p class="p1">const ratingLabelPlugin={id:'ratingLabels',afterDraw(chart){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const{ctx}=chart;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const meta=chart.getDatasetMeta(0);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const segs=[['优秀\n42%'],['良好\n35%'],['合格\n16%'],['不合\n7%']];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>meta.data.forEach((arc,i)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const v=chart.data.datasets[0].data[i];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if(v&lt;10)return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const angle=(arc.startAngle+arc.endAngle)/2;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const r=(arc.innerRadius+arc.outerRadius)/2;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const x=arc.x+Math.cos(angle)*r;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const y=arc.y+Math.sin(angle)*r;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const lines=segs[i][0].split('\n');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle='#fff';ctx.font='bold 9px Segoe UI';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillText(lines[0],x,y-5);ctx.fillText(lines[1],x,y+6);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.restore();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}};</p>
-<p class="p1">new Chart(document.getElementById('ratingDonutChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'doughnut',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{labels:['优秀 126家','良好 105家','合格 48家','不合格 21家'],datasets:[{data:[42,35,16,7],backgroundColor:['#10b981','#6366f1','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:4}]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{cutout:'50%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;c.label+' ('+c.raw+'%)'}}}},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>plugins:[ratingLabelPlugin]</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// 客户库</p>
-<p class="p1">new Chart(document.getElementById('clientChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'bar',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>labels:['华南物业','深圳工程','东莞采购','广州餐饮','佛山综合','珠海服务','惠州建设','中山物资'],</p>
-<p class="p1"><span class="Apple-converted-space">    </span>datasets:[{label:'客户数量',data:[98,72,84,68,64,42,36,30],</p>
-<p class="p1"><span class="Apple-converted-space">      </span>backgroundColor:['rgba(99,102,241,.8)','rgba(6,182,212,.8)','rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(139,92,246,.8)','rgba(239,68,68,.7)','rgba(99,102,241,.6)','rgba(6,182,212,.6)'],</p>
-<p class="p1"><span class="Apple-converted-space">      </span>borderRadius:5,borderSkipped:false}]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;`客户数：${c.raw}家`}}},</p>
-<p class="p1"><span class="Apple-converted-space">    </span>scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#1e293b'},ticks:{font:{size:10}}}}}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// 四大业态 — pct labels on arcs + right legend</p>
-<p class="p1">const bizColors=['#6366f1','#06b6d4','#10b981','#f59e0b'];</p>
-<p class="p1">const bizLabels=['工程建设','物业服务','通用物资','餐饮服务'];</p>
-<p class="p1">const bizVals=[38,28,22,12];</p>
-<p class="p1">const bizAmounts=['¥16.3亿','¥12.0亿','¥9.4亿','¥5.1亿'];</p>
-<p class="p2"><br></p>
-<p class="p1">const bizLabelPlugin={id:'bizLabels',afterDraw(chart){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const{ctx}=chart;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const meta=chart.getDatasetMeta(0);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>meta.data.forEach((arc,i)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const v=chart.data.datasets[0].data[i];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if(v&lt;8)return;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const angle=(arc.startAngle+arc.endAngle)/2;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const r=(arc.innerRadius+arc.outerRadius)/2;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const x=arc.x+Math.cos(angle)*r;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const y=arc.y+Math.sin(angle)*r;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillStyle='#fff';ctx.font='bold 10px Segoe UI';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.fillText(v+'%',x,y);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ctx.restore();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}};</p>
-<p class="p2"><br></p>
-<p class="p1">new Chart(document.getElementById('bizChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'doughnut',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{labels:bizLabels,datasets:[{data:bizVals,backgroundColor:bizColors,borderWidth:2,borderColor:'#111827',hoverOffset:4}]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{cutout:'40%',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;`${c.label}: ${c.raw}% / ${bizAmounts[c.dataIndex]}`}}}},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>plugins:[bizLabelPlugin]</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// right legend — single column, no wrap</p>
-<p class="p1">const bl=document.getElementById('bizLegend');</p>
-<p class="p1">bizLabels.forEach((l,i)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>bl.innerHTML+=`&lt;div style="display:flex;align-items:center;gap:7px;white-space:nowrap;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;span style="width:9px;height:9px;border-radius:50%;background:${bizColors[i]};flex-shrink:0;display:inline-block;"&gt;&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;span style="font-size:11px;color:#e2e8f0;min-width:48px;"&gt;${l}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;span style="font-size:11px;color:${bizColors[i]};font-weight:700;"&gt;${bizAmounts[i]}&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;span style="font-size:10px;color:var(--muted);"&gt;${bizVals[i]}%&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;`;</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// 漏斗</p>
-<p class="p1">const funnelData=[</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{label:'立项申请',val:248,pct:100,conv:'',color:'#6366f1'},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{label:'方案审批',val:186,pct:75,conv:'转化率 75%',color:'#8b5cf6'},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{label:'招标发布',val:134,pct:54,conv:'转化率 72%',color:'#06b6d4'},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>{label:'定标公示',val:98,pct:40,conv:'转化率 73%',color:'#10b981'},</p>
-<p class="p1">];</p>
-<p class="p1">const fw=document.getElementById('funnelWrap');</p>
-<p class="p1">funnelData.forEach((f,i)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const w=48+f.pct*0.52;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const nextPct=i&lt;funnelData.length-1?funnelData[i+1].pct:f.pct;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const nextW=48+nextPct*0.52;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const cr=(100-(nextW/w*100))/2;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>fw.innerHTML+=`</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="f-step"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="width:${w}%;background:${f.color};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>clip-path:polygon(${cr}% 100%,${100-cr}% 100%,100% 0%,0% 0%);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>display:flex;align-items:center;justify-content:space-between;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>padding:0 ${10+cr*0.4}px;color:#fff;font-size:11px;font-weight:700;height:34px;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;span&gt;${f.label}&lt;/span&gt;&lt;span&gt;${f.val}项&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>${f.conv?`&lt;div style="font-size:10px;color:var(--muted);text-align:center;padding:1px 0 2px;"&gt;${f.conv}&lt;/div&gt;`:''}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;`;</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">// EXEC supplier rank</p>
-<p class="p1">[['恒达建材有限公司',42,'¥4.82亿'],['博远工程建设集团',38,'¥3.96亿'],['华宇通用物资',35,'¥3.24亿'],['天逸餐饮集团',29,'¥2.86亿'],['绿洲物业服务',31,'¥2.54亿'],['明达照明科技',22,'¥1.98亿'],['粤通建筑材料',19,'¥1.76亿'],['晨光设备租赁',16,'¥1.42亿'],['鑫盛安防系统',14,'¥1.18亿'],['瑞达清洁服务',12,'¥0.96亿']].forEach((s,i)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const cls=i===0?'r1':i===1?'r2':i===2?'r3':'rn';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('supplierRank').innerHTML+=`&lt;tr&gt;&lt;td&gt;&lt;span class="rank-badge ${cls}"&gt;${i+1}&lt;/span&gt;&lt;/td&gt;&lt;td&gt;${s[0]}&lt;/td&gt;&lt;td&gt;${s[1]}份&lt;/td&gt;&lt;td style="color:#06b6d4;font-weight:700"&gt;${s[2]}&lt;/td&gt;&lt;/tr&gt;`;</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">let invChart=null;</p>
-<p class="p1">const trendData={</p>
-<p class="p1"><span class="Apple-converted-space">  </span>day:{labels:['6/3','6/4','6/5','6/6','6/7','6/8','6/9'],plan:[120,130,110,140,125,135,128],actual:[108,122,98,136,118,130,120]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>month:{labels:['1月','2月','3月','4月','5月','6月'],plan:[800,760,820,880,900,840],actual:[740,700,780,840,860,810]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>quarter:{labels:['Q1','Q2','Q3','Q4'],plan:[2400,2600,2800,3000],actual:[2260,2450,2640,2820]},</p>
-<p class="p1">};</p>
-<p class="p1">function buildInv(type){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const d=trendData[type];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(invChart)invChart.destroy();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>invChart=new Chart(document.getElementById('inventoryChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>type:'line',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>data:{labels:d.labels,datasets:[</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{label:'计划采购',data:d.plan,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.12)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6366f1'},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{label:'实际入库',data:d.actual,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#10b981'}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]},</p>
-<p class="p1"><span class="Apple-converted-space">    </span>options:{maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},padding:10}}},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>scales:{x:{grid:{color:'#1e293b'},ticks:{font:{size:10}}},y:{grid:{color:'#1e293b'},ticks:{font:{size:10}}}}}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}</p>
-<p class="p1">buildInv('day');</p>
-<p class="p1">function switchTrend(type,btn){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.querySelectorAll('.trend-toggle .tt-btn').forEach(b=&gt;b.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btn.classList.add('active');buildInv(type);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">new Chart(document.getElementById('costChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'doughnut',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{labels:['人工成本','物料成本','管理成本'],datasets:[{data:[45,38,17],backgroundColor:['#6366f1','#06b6d4','#f59e0b'],borderWidth:0,hoverOffset:4}]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{cutout:'62%',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;`${c.label}: ${c.raw}%`}}}}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">new Chart(document.getElementById('supplierExecChart'),{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>type:'bar',</p>
-<p class="p1"><span class="Apple-converted-space">  </span>data:{labels:['恒达建材','博远工程','华宇通用','天逸餐饮','绿洲物业'],</p>
-<p class="p1"><span class="Apple-converted-space">    </span>datasets:[{label:'合同金额',data:[4820,3960,3240,2860,2540],</p>
-<p class="p1"><span class="Apple-converted-space">      </span>backgroundColor:['rgba(99,102,241,.85)','rgba(139,92,246,.85)','rgba(6,182,212,.85)','rgba(16,185,129,.85)','rgba(245,158,11,.85)'],</p>
-<p class="p1"><span class="Apple-converted-space">      </span>borderRadius:5,borderSkipped:false,barThickness:26}]},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>options:{maintainAspectRatio:false,indexAxis:'y',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>plugins:{legend:{display:false},tooltip:{callbacks:{label:c=&gt;`¥${c.raw.toLocaleString()}万`}}},</p>
-<p class="p1"><span class="Apple-converted-space">    </span>scales:{x:{grid:{color:'#1e293b'},ticks:{font:{size:10},callback:v=&gt;`¥${(v/1000).toFixed(1)}k`}},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>y:{grid:{display:false},ticks:{font:{size:11},color:'#e2e8f0'}}}}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">const execData={all:['¥3,240万','¥2,186万'],p1:['¥1,280万','¥860万'],p2:['¥2,160万','¥1,440万'],p3:['¥860万','¥580万'],p4:['¥540万','¥360万']};</p>
-<p class="p1">function updateExecProject(v){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const d=execData[v]||execData.all;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('exec-income').textContent=d[0];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('exec-expense').textContent=d[1];</p>
-<p class="p1">}</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+
+<div class="header">
+  <div class="logo">⬡ 智慧采购管理平台</div>
+  <div class="header-right">
+    <div class="time" id="clock"></div>
+    <div class="view-tabs">
+      <button class="view-tab active" onclick="switchView('admin',this)">管理决策层</button>
+      <button class="view-tab" onclick="switchView('exec',this)">项目执行层</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-title"></span><span class="modal-close" onclick="document.getElementById('modal').classList.remove('show')">✕</span></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ===== ADMIN ===== -->
+<div class="view active" id="view-admin">
+
+  <!-- ROW1 KPI -->
+  <div class="row">
+    <div class="kpi-row">
+      <div class="kpi-card" onclick="openModal('contract')"><div class="kpi-label">年度合同签约总额</div><div class="kpi-value">¥42.8亿</div><div class="kpi-sub up">▲ 同比增长 18.6%</div></div>
+      <div class="kpi-card" onclick="openModal('profit')"><div class="kpi-label">利润总额</div><div class="kpi-value">¥6.34亿</div><div class="kpi-sub up">▲ 同比增长 12.3%</div></div>
+      <div class="kpi-card" onclick="openModal('cashback')"><div class="kpi-label">资金回笼率</div><div class="kpi-value">87.2%</div><div class="kpi-sub up">▲ 较上月 +2.1%</div></div>
+      <div class="kpi-card" onclick="openModal('receivable')"><div class="kpi-label">待收款金额</div><div class="kpi-value">¥5.47亿</div><div class="kpi-sub dn">▼ 较上月 +0.8亿</div></div>
+      <div class="kpi-card" onclick="openModal('budget')"><div class="kpi-label">预算执行率</div><div class="kpi-value">76.4%</div><div class="kpi-sub" style="color:var(--muted)">¥32.7亿 / ¥42.8亿</div></div>
+    </div>
+  </div>
+
+  <!-- ROW2 -->
+  <div class="row">
+    <div class="mid-grid">
+
+      <!-- LEFT -->
+      <div class="left-col">
+        <div class="mini-row">
+          <!-- 集采覆盖率 -->
+          <div class="mini-card">
+            <div class="ctitle"><span class="bar"></span>集采覆盖率</div>
+            <div style="display:flex;justify-content:center;align-items:center;flex:1;">
+              <div class="donut-wrap" style="width:110px;height:110px;">
+                <canvas id="coverageChart" width="110" height="110"></canvas>
+                <div class="donut-center">
+                  <div class="dc-val">73.8%</div>
+                  <div class="dc-sub">覆盖率</div>
+                </div>
+              </div>
+            </div>
+            <div class="cov-stats">
+              <div class="cov-stat"><div class="sv" style="color:var(--accent2);">¥42.8亿</div><div class="sl">采购总金额</div></div>
+              <div class="cov-stat"><div class="sv" style="color:var(--accent);">¥31.6亿</div><div class="sl">框架协议覆盖</div></div>
+            </div>
+          </div>
+          <!-- 履约评级 -->
+          <div class="mini-card">
+            <div class="ctitle"><span class="bar"></span>履约评级</div>
+            <div style="display:flex;justify-content:center;align-items:center;flex:1;">
+              <div class="donut-wrap" style="width:110px;height:110px;">
+                <canvas id="ratingDonutChart" width="110" height="110"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 客户库 -->
+        <div class="chart-card">
+          <div class="ctitle" style="margin-bottom:8px;">
+            <span class="bar"></span>客户库分析
+            <div style="display:flex;gap:10px;margin-left:6px;align-items:center;flex-wrap:nowrap;">
+              <span style="font-size:11px;color:var(--muted);">总数 <strong style="font-size:16px;font-weight:800;color:var(--accent);">386</strong></span>
+              <span style="font-size:11px;color:var(--muted);">战略 <strong style="font-size:13px;color:#10b981;">24</strong></span>
+              <span style="font-size:11px;color:var(--muted);">重点 <strong style="font-size:13px;color:#f59e0b;">118</strong></span>
+              <span style="font-size:11px;color:var(--muted);">普通 <strong style="font-size:13px;color:var(--muted);">244</strong></span>
+            </div>
+          </div>
+          <div style="position:relative;height:130px;"><canvas id="clientChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- CENTER TOP10 -->
+      <div class="chart-card" style="display:flex;flex-direction:column;">
+        <div class="ctitle"><span class="bar"></span>核心供应商排名 TOP10</div>
+        <table class="rank-table">
+          <thead><tr><th>排名</th><th>供应商名称</th><th>合同数</th><th>采购总金额</th></tr></thead>
+          <tbody id="supplierRank"></tbody>
+        </table>
+      </div>
+
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+
+        <!-- 四大业态 -->
+        <div class="chart-card" style="flex:1;">
+          <div class="ctitle"><span class="bar"></span>四大业态采购资金分布</div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <!-- donut -->
+            <div style="position:relative;flex-shrink:0;width:130px;height:130px;">
+              <canvas id="bizChart" width="130" height="130"></canvas>
+            </div>
+            <!-- legend single column, no wrap -->
+            <div id="bizLegend" style="display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;"></div>
+          </div>
+        </div>
+
+        <!-- 漏斗 -->
+        <div class="chart-card" style="flex:1;">
+          <div class="ctitle"><span class="bar"></span>项目立项与转化漏斗</div>
+          <div class="funnel-wrap" id="funnelWrap"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW3 lists -->
+  <div class="row">
+    <div class="chart-card">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('admin','risk',this)">⚠️ 风险预警监控</button>
+        <button class="tab-btn" onclick="switchTab('admin','profrank',this)">📈 利润排行</button>
+        <button class="tab-btn" onclick="switchTab('admin','complaint',this)">📋 供应商投诉列表</button>
+      </div>
+      <div class="tab-pane active" id="admin-risk">
+        <table class="list-table"><thead><tr><th>序号</th><th>供应商名称</th><th>风险类型</th><th>日期</th><th>等级</th><th>操作</th></tr></thead><tbody>
+          <tr><td>1</td><td>恒达建材有限公司</td><td>合同到期未续签</td><td>2025-06-08</td><td><span class="badge b-red">高风险</span></td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>2</td><td>绿洲物业服务</td><td>履约评分下降</td><td>2025-06-07</td><td><span class="badge b-yellow">中风险</span></td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>3</td><td>天逸餐饮集团</td><td>资质证书临期</td><td>2025-06-06</td><td><span class="badge b-yellow">中风险</span></td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>4</td><td>华宇通用物资</td><td>付款逾期</td><td>2025-06-05</td><td><span class="badge b-red">高风险</span></td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>5</td><td>博远工程建设</td><td>质量问题记录</td><td>2025-06-03</td><td><span class="badge b-green">低风险</span></td><td><button class="btn-link">查看详情</button></td></tr>
+        </tbody></table>
+      </div>
+      <div class="tab-pane" id="admin-profrank">
+        <table class="list-table"><thead><tr><th>序号</th><th>项目名称</th><th>合同额</th><th>利润额</th><th>利润率</th></tr></thead><tbody>
+          <tr><td>1</td><td>龙华物业综合服务项目</td><td>¥1.28亿</td><td>¥2,176万</td><td><span class="badge b-green">17.0%</span></td></tr>
+          <tr><td>2</td><td>南山区工程建设EPC总包</td><td>¥2.16亿</td><td>¥3,456万</td><td><span class="badge b-green">16.0%</span></td></tr>
+          <tr><td>3</td><td>福田通用物资年度框架</td><td>¥0.86亿</td><td>¥1,204万</td><td><span class="badge b-blue">14.0%</span></td></tr>
+          <tr><td>4</td><td>宝安餐饮服务采购项目</td><td>¥0.54亿</td><td>¥648万</td><td><span class="badge b-blue">12.0%</span></td></tr>
+          <tr><td>5</td><td>罗湖智慧物业改造项目</td><td>¥1.02亿</td><td>¥918万</td><td><span class="badge b-yellow">9.0%</span></td></tr>
+        </tbody></table>
+      </div>
+      <div class="tab-pane" id="admin-complaint">
+        <table class="list-table"><thead><tr><th>序号</th><th>投诉标题</th><th>项目名称</th><th>标段（包）名称</th><th>质疑信息</th><th>操作</th></tr></thead><tbody>
+          <tr><td>1</td><td>关于评分标准不透明投诉</td><td>南山工程建设EPC</td><td>A标段</td><td>评分细则未公示</td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>2</td><td>资格审查结果异议</td><td>福田通用物资采购</td><td>第2包</td><td>资质认定存疑</td><td><button class="btn-link">查看详情</button></td></tr>
+          <tr><td>3</td><td>中标价格合理性质疑</td><td>龙华物业综合服务</td><td>B标段</td><td>报价低于成本价</td><td><button class="btn-link">查看详情</button></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXEC ===== -->
+<div class="view" id="view-exec">
+  <div class="row">
+    <div class="chart-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--muted);white-space:nowrap;">项目筛选：</span>
+        <select class="filter-select" onchange="updateExecProject(this.value)" style="min-width:200px;">
+          <option value="all">全部项目</option>
+          <option value="p1">龙华物业综合服务项目</option>
+          <option value="p2">南山工程建设EPC总包</option>
+          <option value="p3">福田通用物资年度框架</option>
+          <option value="p4">宝安餐饮服务采购项目</option>
+        </select>
+        <span style="font-size:12px;color:var(--muted);margin-left:auto;">数据更新：2025-06-09 09:30</span>
+      </div>
+      <div class="exec-kpi-row">
+        <div class="kpi-card" style="cursor:default;"><div class="kpi-label">本月收入</div><div class="kpi-value" id="exec-income">¥3,240万</div><div class="kpi-sub up">▲ 同比 +14.2%</div></div>
+        <div class="kpi-card" style="cursor:default;"><div class="kpi-label">本月支出</div><div class="kpi-value" id="exec-expense">¥2,186万</div><div class="kpi-sub dn">▲ 同比 +8.7%</div></div>
+        <div class="kpi-card" style="cursor:default;"><div class="kpi-label">异常订单数量</div><div class="kpi-value" style="color:#ef4444;">23</div><div class="kpi-sub dn">较上月 +5单</div></div>
+        <div class="kpi-card" style="cursor:default;"><div class="kpi-label">临期合同数量</div><div class="kpi-value" style="color:#f59e0b;">8</div><div class="kpi-sub" style="color:var(--muted);">30天内到期</div></div>
+        <div class="kpi-card" style="cursor:default;"><div class="kpi-label">竞价活跃度</div><div class="kpi-value" style="color:#8b5cf6;">47家</div><div class="kpi-sub" style="color:var(--muted);">参与竞价厂商</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="exec-mid">
+      <div class="chart-card" style="display:flex;flex-direction:column;">
+        <div class="ctitle"><span class="bar"></span>项目物料入库与验收</div>
+        <div class="trend-toggle">
+          <button class="tt-btn active" onclick="switchTrend('day',this)">日度</button>
+          <button class="tt-btn" onclick="switchTrend('month',this)">月度</button>
+          <button class="tt-btn" onclick="switchTrend('quarter',this)">季度</button>
+        </div>
+        <div style="flex:1;position:relative;min-height:220px;"><canvas id="inventoryChart" style="position:absolute;inset:0;width:100%!important;height:100%!important;"></canvas></div>
+      </div>
+
+      <div class="chart-card" style="display:flex;flex-direction:column;">
+        <div class="ctitle"><span class="bar"></span>项目成本结构</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:20px;padding:4px 0;">
+          <div class="donut-wrap" style="width:150px;height:150px;flex-shrink:0;">
+            <canvas id="costChart" width="150" height="150"></canvas>
+            <div class="donut-center">
+              <div class="dc-val" style="font-size:13px;">¥2,186万</div>
+              <div class="dc-sub">总成本</div>
+            </div>
+          </div>
+          <div>
+            <div class="cost-legend-item"><div class="cost-dot" style="background:#6366f1;"></div><div><div style="font-size:11px;color:var(--muted);">人工成本</div><div style="font-size:13px;font-weight:700;color:#6366f1;">¥983万 <span style="font-size:11px;color:var(--muted);font-weight:400;">45%</span></div></div></div>
+            <div class="cost-legend-item"><div class="cost-dot" style="background:#06b6d4;"></div><div><div style="font-size:11px;color:var(--muted);">物料成本</div><div style="font-size:13px;font-weight:700;color:#06b6d4;">¥831万 <span style="font-size:11px;color:var(--muted);font-weight:400;">38%</span></div></div></div>
+            <div class="cost-legend-item" style="margin-bottom:0;"><div class="cost-dot" style="background:#f59e0b;"></div><div><div style="font-size:11px;color:var(--muted);">管理成本</div><div style="font-size:13px;font-weight:700;color:#f59e0b;">¥372万 <span style="font-size:11px;color:var(--muted);font-weight:400;">17%</span></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card" style="display:flex;flex-direction:column;">
+        <div class="ctitle"><span class="bar"></span>供应商排名 TOP5（合同金额）</div>
+        <div style="flex:1;position:relative;min-height:220px;"><canvas id="supplierExecChart" style="position:absolute;inset:0;width:100%!important;height:100%!important;"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="chart-card">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('exec','abnormal',this)">⚠️ 异常处理列表</button>
+        <button class="tab-btn" onclick="switchTab('exec','dispute',this)">📋 供应商质疑列表</button>
+      </div>
+      <div class="tab-pane active" id="exec-abnormal">
+        <table class="list-table"><thead><tr><th>需求</th><th>物料名称</th><th>供应商</th><th>数量</th><th>异常原因</th><th>异常类型</th><th>操作</th></tr></thead><tbody>
+          <tr><td>紧急补货</td><td>304不锈钢管件</td><td>华宇通用物资</td><td>500件</td><td>规格不符</td><td><span class="badge b-yellow">质量异常</span></td><td><button class="btn-link">处理</button></td></tr>
+          <tr><td>正常采购</td><td>建筑防水涂料</td><td>恒达建材</td><td>200桶</td><td>交期延误7天</td><td><span class="badge b-red">交期异常</span></td><td><button class="btn-link">处理</button></td></tr>
+          <tr><td>替代采购</td><td>LED路灯灯具</td><td>明达照明</td><td>80套</td><td>型号停产</td><td><span class="badge b-blue">型号变更</span></td><td><button class="btn-link">处理</button></td></tr>
+          <tr><td>正常采购</td><td>餐厅厨具套装</td><td>天逸餐饮</td><td>15套</td><td>数量短缺</td><td><span class="badge b-yellow">数量异常</span></td><td><button class="btn-link">处理</button></td></tr>
+        </tbody></table>
+      </div>
+      <div class="tab-pane" id="exec-dispute">
+        <table class="list-table"><thead><tr><th>质疑标题</th><th>标段（包）名称</th><th>项目名称</th><th>提出单位</th><th>提出时间</th><th>受理状态</th><th>操作</th></tr></thead><tbody>
+          <tr><td>评分结果异议</td><td>A标段</td><td>龙华物业综合服务</td><td>绿洲物业服务</td><td>2025-06-08</td><td><span class="badge b-yellow">审核中</span></td><td><button class="btn-link">查看</button></td></tr>
+          <tr><td>资质审查质疑</td><td>第2包</td><td>福田通用物资</td><td>华宇通用物资</td><td>2025-06-06</td><td><span class="badge b-green">已受理</span></td><td><button class="btn-link">查看</button></td></tr>
+          <tr><td>技术参数设置疑义</td><td>C标段</td><td>南山工程EPC</td><td>博远工程建设</td><td>2025-06-04</td><td><span class="badge b-red">已驳回</span></td><td><button class="btn-link">查看</button></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+Chart.defaults.color='#64748b';
+Chart.defaults.borderColor='#1e293b';
+
+setInterval(()=>document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false}),1000);
+document.getElementById('clock').textContent=new Date().toLocaleString('zh-CN',{hour12:false});
+
+function switchView(v,btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  btn.classList.add('active');
+}
+function switchTab(view,name,btn){
+  const card=btn.closest('.chart-card');
+  card.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  card.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(view+'-'+name).classList.add('active');
+}
+
+// MODAL
+const modalData={
+  contract:{title:'年度合同签约总额 · 子公司明细',cols:['子公司名称','签约金额','同比增速'],rows:[['华南物业集团','¥12.4亿','▲21.3%'],['深圳工程建设','¥10.8亿','▲15.6%'],['东莞通用采购','¥8.2亿','▲18.9%'],['广州餐饮管理','¥6.5亿','▲9.2%'],['佛山综合服务','¥4.9亿','▲22.1%']]},
+  profit:{title:'利润总额 · 子公司明细',cols:['子公司名称','利润额','占比'],rows:[['华南物业集团','¥1.92亿','30.3%'],['深圳工程建设','¥1.76亿','27.8%'],['东莞通用采购','¥1.24亿','19.6%'],['广州餐饮管理','¥0.86亿','13.6%'],['佛山综合服务','¥0.56亿','8.7%']]},
+  cashback:{title:'资金回笼率 · 子公司明细',cols:['子公司名称','回笼率','评级'],rows:[['华南物业集团','92.4%','优秀'],['深圳工程建设','88.6%','良好'],['东莞通用采购','85.2%','良好'],['广州餐饮管理','82.0%','合格'],['佛山综合服务','87.8%','良好']]},
+  receivable:{title:'待收款金额 · 子公司明细',cols:['子公司名称','待收款额','账龄'],rows:[['华南物业集团','¥1.24亿','逾期60天'],['深圳工程建设','¥1.56亿','逾期30天'],['东莞通用采购','¥0.98亿','正常'],['广州餐饮管理','¥0.86亿','逾期15天'],['佛山综合服务','¥0.83亿','正常']]},
+  budget:{title:'预算执行率 · 子公司明细',cols:['子公司名称','实际执行','总预算','执行率'],rows:[['华南物业集团','¥9.8亿','¥12.4亿','79.0%'],['深圳工程建设','¥8.4亿','¥10.8亿','77.8%'],['东莞通用采购','¥6.2亿','¥8.2亿','75.6%'],['广州餐饮管理','¥4.8亿','¥6.5亿','73.8%'],['佛山综合服务','¥3.5亿','¥4.9亿','71.4%']]},
+};
+function openModal(key){
+  const d=modalData[key];
+  document.getElementById('modal-title').textContent=d.title;
+  let h='<table class="sub-table"><thead><tr>'+d.cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>';
+  d.rows.forEach(r=>{h+='<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>';});
+  h+='</tbody></table>';
+  document.getElementById('modal-body').innerHTML=h;
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(e){if(e.target.id==='modal')document.getElementById('modal').classList.remove('show');}
+
+// 集采覆盖率
+new Chart(document.getElementById('coverageChart'),{
+  type:'doughnut',
+  data:{labels:['框架协议覆盖 ¥31.6亿','未覆盖 ¥11.2亿'],datasets:[{data:[73.8,26.2],backgroundColor:['#6366f1','#1e293b'],borderWidth:0,hoverOffset:4}]},
+  options:{cutout:'72%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+' ('+c.raw+'%)'}}}}
+});
+
+// 履约评级 — labels drawn on arcs
+const ratingLabelPlugin={id:'ratingLabels',afterDraw(chart){
+  const{ctx}=chart;
+  const meta=chart.getDatasetMeta(0);
+  const segs=[['优秀\n42%'],['良好\n35%'],['合格\n16%'],['不合\n7%']];
+  meta.data.forEach((arc,i)=>{
+    const v=chart.data.datasets[0].data[i];
+    if(v<10)return;
+    const angle=(arc.startAngle+arc.endAngle)/2;
+    const r=(arc.innerRadius+arc.outerRadius)/2;
+    const x=arc.x+Math.cos(angle)*r;
+    const y=arc.y+Math.sin(angle)*r;
+    const lines=segs[i][0].split('\n');
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';ctx.font='bold 9px Segoe UI';
+    ctx.fillText(lines[0],x,y-5);ctx.fillText(lines[1],x,y+6);
+    ctx.restore();
+  });
+}};
+new Chart(document.getElementById('ratingDonutChart'),{
+  type:'doughnut',
+  data:{labels:['优秀 126家','良好 105家','合格 48家','不合格 21家'],datasets:[{data:[42,35,16,7],backgroundColor:['#10b981','#6366f1','#f59e0b','#ef4444'],borderWidth:0,hoverOffset:4}]},
+  options:{cutout:'50%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+' ('+c.raw+'%)'}}}},
+  plugins:[ratingLabelPlugin]
+});
+
+// 客户库
+new Chart(document.getElementById('clientChart'),{
+  type:'bar',
+  data:{
+    labels:['华南物业','深圳工程','东莞采购','广州餐饮','佛山综合','珠海服务','惠州建设','中山物资'],
+    datasets:[{label:'客户数量',data:[98,72,84,68,64,42,36,30],
+      backgroundColor:['rgba(99,102,241,.8)','rgba(6,182,212,.8)','rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(139,92,246,.8)','rgba(239,68,68,.7)','rgba(99,102,241,.6)','rgba(6,182,212,.6)'],
+      borderRadius:5,borderSkipped:false}]
+  },
+  options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`客户数：${c.raw}家`}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:'#1e293b'},ticks:{font:{size:10}}}}}
+});
+
+// 四大业态 — pct labels on arcs + right legend
+const bizColors=['#6366f1','#06b6d4','#10b981','#f59e0b'];
+const bizLabels=['工程建设','物业服务','通用物资','餐饮服务'];
+const bizVals=[38,28,22,12];
+const bizAmounts=['¥16.3亿','¥12.0亿','¥9.4亿','¥5.1亿'];
+
+const bizLabelPlugin={id:'bizLabels',afterDraw(chart){
+  const{ctx}=chart;
+  const meta=chart.getDatasetMeta(0);
+  meta.data.forEach((arc,i)=>{
+    const v=chart.data.datasets[0].data[i];
+    if(v<8)return;
+    const angle=(arc.startAngle+arc.endAngle)/2;
+    const r=(arc.innerRadius+arc.outerRadius)/2;
+    const x=arc.x+Math.cos(angle)*r;
+    const y=arc.y+Math.sin(angle)*r;
+    ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';ctx.font='bold 10px Segoe UI';
+    ctx.fillText(v+'%',x,y);
+    ctx.restore();
+  });
+}};
+
+new Chart(document.getElementById('bizChart'),{
+  type:'doughnut',
+  data:{labels:bizLabels,datasets:[{data:bizVals,backgroundColor:bizColors,borderWidth:2,borderColor:'#111827',hoverOffset:4}]},
+  options:{cutout:'40%',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}% / ${bizAmounts[c.dataIndex]}`}}}},
+  plugins:[bizLabelPlugin]
+});
+
+// right legend — single column, no wrap
+const bl=document.getElementById('bizLegend');
+bizLabels.forEach((l,i)=>{
+  bl.innerHTML+=`<div style="display:flex;align-items:center;gap:7px;white-space:nowrap;">
+    <span style="width:9px;height:9px;border-radius:50%;background:${bizColors[i]};flex-shrink:0;display:inline-block;"></span>
+    <span style="font-size:11px;color:#e2e8f0;min-width:48px;">${l}</span>
+    <span style="font-size:11px;color:${bizColors[i]};font-weight:700;">${bizAmounts[i]}</span>
+    <span style="font-size:10px;color:var(--muted);">${bizVals[i]}%</span>
+  </div>`;
+});
+
+// 漏斗
+const funnelData=[
+  {label:'立项申请',val:248,pct:100,conv:'',color:'#6366f1'},
+  {label:'方案审批',val:186,pct:75,conv:'转化率 75%',color:'#8b5cf6'},
+  {label:'招标发布',val:134,pct:54,conv:'转化率 72%',color:'#06b6d4'},
+  {label:'定标公示',val:98,pct:40,conv:'转化率 73%',color:'#10b981'},
+];
+const fw=document.getElementById('funnelWrap');
+funnelData.forEach((f,i)=>{
+  const w=48+f.pct*0.52;
+  const nextPct=i<funnelData.length-1?funnelData[i+1].pct:f.pct;
+  const nextW=48+nextPct*0.52;
+  const cr=(100-(nextW/w*100))/2;
+  fw.innerHTML+=`
+    <div class="f-step">
+      <div style="width:${w}%;background:${f.color};
+        clip-path:polygon(${cr}% 100%,${100-cr}% 100%,100% 0%,0% 0%);
+        display:flex;align-items:center;justify-content:space-between;
+        padding:0 ${10+cr*0.4}px;color:#fff;font-size:11px;font-weight:700;height:34px;">
+        <span>${f.label}</span><span>${f.val}项</span>
+      </div>
+      ${f.conv?`<div style="font-size:10px;color:var(--muted);text-align:center;padding:1px 0 2px;">${f.conv}</div>`:''}
+    </div>`;
+});
+
+// EXEC supplier rank
+[['恒达建材有限公司',42,'¥4.82亿'],['博远工程建设集团',38,'¥3.96亿'],['华宇通用物资',35,'¥3.24亿'],['天逸餐饮集团',29,'¥2.86亿'],['绿洲物业服务',31,'¥2.54亿'],['明达照明科技',22,'¥1.98亿'],['粤通建筑材料',19,'¥1.76亿'],['晨光设备租赁',16,'¥1.42亿'],['鑫盛安防系统',14,'¥1.18亿'],['瑞达清洁服务',12,'¥0.96亿']].forEach((s,i)=>{
+  const cls=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+  document.getElementById('supplierRank').innerHTML+=`<tr><td><span class="rank-badge ${cls}">${i+1}</span></td><td>${s[0]}</td><td>${s[1]}份</td><td style="color:#06b6d4;font-weight:700">${s[2]}</td></tr>`;
+});
+
+let invChart=null;
+const trendData={
+  day:{labels:['6/3','6/4','6/5','6/6','6/7','6/8','6/9'],plan:[120,130,110,140,125,135,128],actual:[108,122,98,136,118,130,120]},
+  month:{labels:['1月','2月','3月','4月','5月','6月'],plan:[800,760,820,880,900,840],actual:[740,700,780,840,860,810]},
+  quarter:{labels:['Q1','Q2','Q3','Q4'],plan:[2400,2600,2800,3000],actual:[2260,2450,2640,2820]},
+};
+function buildInv(type){
+  const d=trendData[type];
+  if(invChart)invChart.destroy();
+  invChart=new Chart(document.getElementById('inventoryChart'),{
+    type:'line',
+    data:{labels:d.labels,datasets:[
+      {label:'计划采购',data:d.plan,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.12)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#6366f1'},
+      {label:'实际入库',data:d.actual,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#10b981'}
+    ]},
+    options:{maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},padding:10}}},
+      scales:{x:{grid:{color:'#1e293b'},ticks:{font:{size:10}}},y:{grid:{color:'#1e293b'},ticks:{font:{size:10}}}}}
+  });
+}
+buildInv('day');
+function switchTrend(type,btn){
+  document.querySelectorAll('.trend-toggle .tt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');buildInv(type);
+}
+
+new Chart(document.getElementById('costChart'),{
+  type:'doughnut',
+  data:{labels:['人工成本','物料成本','管理成本'],datasets:[{data:[45,38,17],backgroundColor:['#6366f1','#06b6d4','#f59e0b'],borderWidth:0,hoverOffset:4}]},
+  options:{cutout:'62%',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}%`}}}}
+});
+
+new Chart(document.getElementById('supplierExecChart'),{
+  type:'bar',
+  data:{labels:['恒达建材','博远工程','华宇通用','天逸餐饮','绿洲物业'],
+    datasets:[{label:'合同金额',data:[4820,3960,3240,2860,2540],
+      backgroundColor:['rgba(99,102,241,.85)','rgba(139,92,246,.85)','rgba(6,182,212,.85)','rgba(16,185,129,.85)','rgba(245,158,11,.85)'],
+      borderRadius:5,borderSkipped:false,barThickness:26}]},
+  options:{maintainAspectRatio:false,indexAxis:'y',
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`¥${c.raw.toLocaleString()}万`}}},
+    scales:{x:{grid:{color:'#1e293b'},ticks:{font:{size:10},callback:v=>`¥${(v/1000).toFixed(1)}k`}},
+      y:{grid:{display:false},ticks:{font:{size:11},color:'#e2e8f0'}}}}
+});
+
+const execData={all:['¥3,240万','¥2,186万'],p1:['¥1,280万','¥860万'],p2:['¥2,160万','¥1,440万'],p3:['¥860万','¥580万'],p4:['¥540万','¥360万']};
+function updateExecProject(v){
+  const d=execData[v]||execData.all;
+  document.getElementById('exec-income').textContent=d[0];
+  document.getElementById('exec-expense').textContent=d[1];
+}
+</script>
 </body>
 </html>
